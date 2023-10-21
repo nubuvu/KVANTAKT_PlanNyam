@@ -27,10 +27,15 @@ type TodoItem interface {
 	Update(userId, itemId int, input todo.UpdateItemInput) error
 }
 
+type JsonCheque interface {
+	ParseJsonCheque(userId int, item []byte) ([]int, error)
+}
+
 type Service struct {
 	Authorization
 	TodoList
 	TodoItem
+	JsonCheque
 }
 
 func NewService(repos *repository.Repository) *Service {
@@ -38,5 +43,6 @@ func NewService(repos *repository.Repository) *Service {
 		Authorization: NewAuthService(repos.Authorization),
 		TodoList:      NewTodoListService(repos.TodoList),
 		TodoItem:      NewTodoItemService(repos.TodoItem, repos.TodoList),
+		JsonCheque:    NewJsonChequeService(repos.JsonCheque),
 	}
 }

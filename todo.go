@@ -16,6 +16,8 @@ type UsersList struct {
 type TodoItem struct {
 	Id          int    `json:"id" db:"id"`
 	Title       string `json:"title" db:"title" binding:"required"`
+	Quantity    string `json:"quantity" db:"quantity" binding:"required"`
+	Price       string `json:"price" db:"price" binding:"required"`
 	Description string `json:"description" db:"description"`
 	Done        bool   `json:"done" db:"done"`
 }
@@ -40,6 +42,8 @@ func (i UpdateListInput) Validate() error {
 
 type UpdateItemInput struct {
 	Title       *string `json:"title"`
+	Quantity    *string `json:"quantity"`
+	Price       *string `json:"price"`
 	Description *string `json:"Description"`
 	Done        *bool   `json:"done" db:"done"`
 }
@@ -49,4 +53,18 @@ func (i UpdateItemInput) Validate() error {
 		return errors.New("Update structure has no values")
 	}
 	return nil
+}
+
+type JsonCheque struct {
+	Ticket struct {
+		Document struct {
+			Receipt struct {
+				Item []struct {
+					Name     string  `json:"name"`
+					Quantity float32 `json:"quantity"`
+					Price    float32 `json:"price"`
+				} `json:"items"`
+			} `json:"receipt"`
+		} `json:"document"`
+	} `json:"ticket"`
 }

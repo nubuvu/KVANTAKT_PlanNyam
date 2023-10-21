@@ -21,8 +21,8 @@ func (r *TodoItemPostgres) Create(listId int, item todo.TodoItem) (int, error) {
 		return 0, err
 	}
 	var itemId int
-	createItemQuery := fmt.Sprintf("INSERT INTO %s (title, description) VALUES ($1, $2) RETURNING id", todoItemsTable)
-	row := tx.QueryRow(createItemQuery, item.Title, item.Description)
+	createItemQuery := fmt.Sprintf("INSERT INTO %s (title, quantity, price, description) VALUES ($1, $2, $3, $4) RETURNING id", todoItemsTable)
+	row := tx.QueryRow(createItemQuery, item.Title, item.Quantity, item.Price, item.Description)
 	err = row.Scan(&itemId)
 	if err != nil {
 		tx.Rollback()
@@ -39,7 +39,7 @@ func (r *TodoItemPostgres) Create(listId int, item todo.TodoItem) (int, error) {
 
 func (r *TodoItemPostgres) GetAll(userId, listId int) ([]todo.TodoItem, error) {
 	var items []todo.TodoItem
-	query := fmt.Sprintf("SELECT ti.id, ti.title, ti.description, ti.done FROM %s ti INNER JOIN %s li ON li.item_id = ti.id INNER JOIN %s ul ON ul.list_id = li.list_id WHERE li.list_id = $1 AND ul.user_id = $2",
+	query := fmt.Sprintf("SELECT ti.id, ti.title, ti.quantity, ti.price, ti.description FROM %s ti INNER JOIN %s li ON li.item_id = ti.id INNER JOIN %s ul ON ul.list_id = li.list_id WHERE li.list_id = $1 AND ul.user_id = $2",
 		todoItemsTable, listsItemsTable, usersListsTable)
 	if err := r.db.Select(&items, query, listId, userId); err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (r *TodoItemPostgres) GetAll(userId, listId int) ([]todo.TodoItem, error) {
 
 func (r *TodoItemPostgres) GetById(userId, itemId int) (todo.TodoItem, error) {
 	var item todo.TodoItem
-	query := fmt.Sprintf("SELECT ti.id, ti.title, ti.description, ti.done FROM %s ti INNER JOIN %s li ON li.item_id = ti.id INNER JOIN %s ul ON ul.list_id = li.list_id WHERE ti.id = $1 AND ul.user_id = $2",
+	query := fmt.Sprintf("SELECT ti.id, ti.title, ti.quantity, ti.price, ti.description FROM %s ti INNER JOIN %s li ON li.item_id = ti.id INNER JOIN %s ul ON ul.list_id = li.list_id WHERE ti.id = $1 AND ul.user_id = $2",
 		todoItemsTable, listsItemsTable, usersListsTable)
 	if err := r.db.Get(&item, query, itemId, userId); err != nil {
 		return item, err
@@ -73,15 +73,19 @@ func (r *TodoItemPostgres) Update(userId, itemId int, input todo.UpdateItemInput
 		args = append(args, *input.Title)
 		argId++
 	}
+	if input.Quantity != nil {
+		setValues = append(setValues, fmt.Sprintf("quantity=$%d", argId))
+		args = append(args, *input.Quantity)
+		argId++
+	}
+	if input.Price != nil {
+		setValues = append(setValues, fmt.Sprintf("price=$%d", argId))
+		args = append(args, *input.Price)
+		argId++
+	}
 	if input.Description != nil {
 		setValues = append(setValues, fmt.Sprintf("description=$%d", argId))
 		args = append(args, *input.Description)
-		argId++
-	}
-
-	if input.Done != nil {
-		setValues = append(setValues, fmt.Sprintf("done=$%d", argId))
-		args = append(args, *input.Done)
 		argId++
 	}
 	setQuery := strings.Join(setValues, ", ")

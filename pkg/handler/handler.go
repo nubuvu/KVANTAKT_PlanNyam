@@ -25,6 +25,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		lists := api.Group("/lists")
 		{
+
 			lists.POST("/", h.createList)
 			lists.GET("/", h.getAllLists)
 			lists.GET("/:id", h.getListById)
@@ -36,8 +37,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 				items.POST("/", h.createItem)
 				items.GET("/", h.getAllItems)
 			}
+
+			jsonCheque := lists.Group(":id/jsonParse")
+			{
+				jsonCheque.POST("/", h.parseJsonCheque)
+			}
 		}
-		items := api.Group("items")
+		items := api.Group("/items")
 		{
 			items.GET("/:id", h.getItemById)
 			items.PUT("/:id", h.updateItem)

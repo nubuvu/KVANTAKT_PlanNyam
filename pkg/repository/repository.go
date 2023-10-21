@@ -26,10 +26,15 @@ type TodoItem interface {
 	Update(userId, itemId int, input todo.UpdateItemInput) error
 }
 
+type JsonCheque interface {
+	ParseJsonCheque(userId int, item []byte) ([]int, error)
+}
+
 type Repository struct {
 	Authorization
 	TodoList
 	TodoItem
+	JsonCheque
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
@@ -37,5 +42,6 @@ func NewRepository(db *sqlx.DB) *Repository {
 		Authorization: NewAuthPostgres(db),
 		TodoList:      NewTodoListPostgres(db),
 		TodoItem:      NewTodoItemPostgres(db),
+		JsonCheque:    NewJsonChequePostgres(db),
 	}
 }
