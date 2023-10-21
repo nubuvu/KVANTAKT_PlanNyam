@@ -1,0 +1,1 @@
+# KVANTAKT_PlanNyam
