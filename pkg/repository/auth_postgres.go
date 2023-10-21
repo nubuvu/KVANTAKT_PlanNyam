@@ -13,14 +13,14 @@ type AuthPostgres struct {
 func NewAuthPostgres(db *sqlx.DB) *AuthPostgres {
 	return &AuthPostgres{db: db}
 }
-func (r *AuthPostgres) CreateUser(user todo.User) (int, error) {
+func (r *AuthPostgres) CreateUser(user todo.User) error {
 	var id int
 	query := fmt.Sprintf("INSERT INTO %s (username, password_hash) values ($1, $2) RETURNING id", usersTable)
 	row := r.db.QueryRow(query, user.Username, user.Password)
 	if err := row.Scan(&id); err != nil {
-		return 0, err
+		return err
 	}
-	return id, nil
+	return nil
 }
 
 func (r *AuthPostgres) GetUser(username, password string) (todo.User, error) {
